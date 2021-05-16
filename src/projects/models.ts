@@ -3,13 +3,13 @@ import { Base } from '@typegoose/typegoose/lib/defaultClasses'
 
 export class Project extends Base {
 
-    @prop({ type: String})
+    @prop({ type: String })
     title = '';
 
-    @prop({ type: String})
+    @prop({ type: String })
     shortDescription = '';
 
-    @prop({ type: String})
+    @prop({ type: String })
     longDescription = '';
 }
 

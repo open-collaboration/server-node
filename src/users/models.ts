@@ -4,10 +4,10 @@ import { Base } from '@typegoose/typegoose/lib/defaultClasses'
 
 export class User extends Base {
 
-    @prop({ type: String })
+    @prop({ type: String, unique: true })
     username = ''
 
-    @prop({ type: String })
+    @prop({ type: String, unique: true })
     email = '';
 
     @prop({ type: String })

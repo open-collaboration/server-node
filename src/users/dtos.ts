@@ -10,3 +10,8 @@ export class RegisterUserDto {
     @Length(6)
     password = '';
 }
+
+export class LoginDto {
+    username = ''
+    password = ''
+}
