@@ -2,6 +2,7 @@ import bodyParser from 'body-parser'
 import express from 'express'
 import mongoose from 'mongoose'
 import ProjectRoutes from './projects/routes'
+import UserRoutes from './users/routes'
 
 const app = express()
 
@@ -10,8 +11,12 @@ async function bootstrap() {
 
     app.use(bodyParser.json())
 
-    ProjectRoutes(app)
 
+    console.log('setting up routes')
+    ProjectRoutes(app)
+    UserRoutes(app)
+
+    console.log('starting server')
     app.listen(3000)
 }
 

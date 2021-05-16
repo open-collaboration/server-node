@@ -29,12 +29,7 @@ async function listProjects(req: express.Request, res: express.Response) {
 }
 
 async function createProject(req: express.Request, res: express.Response) {
-    const payload = req.body
-
-    const dto = plainToClass(ProjectDto, payload)
-
-    console.log(dto)
-    console.log(payload)
+    const dto = plainToClass(ProjectDto, req.body)
 
     const validationErrors = await validate(dto, { forbidNonWhitelisted: true })
     if (validationErrors.length > 0) {

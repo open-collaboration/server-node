@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@typegoose/typegoose": "^7.6.0",
+    "@types/bcrypt": "^5.0.0",
     "@types/body-parser": "^1.19.0",
     "@types/mongoose": "^5.10.5",
+    "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",

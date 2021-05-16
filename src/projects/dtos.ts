@@ -18,7 +18,7 @@ export class ProjectDto {
     static fromProject(model: Project): ProjectDto {
         const out = new ProjectDto()
 
-        out.id = model._id
+        out.id = model._id.toHexString()
         out.title = model.title
         out.shortDescription = model.shortDescription
         out.longDescription = model.longDescription

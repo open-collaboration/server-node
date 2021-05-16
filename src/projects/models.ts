@@ -1,8 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
+import { Base } from '@typegoose/typegoose/lib/defaultClasses'
 
-export class Project {
-    @prop()
-    _id?: string;
+export class Project extends Base {
 
     @prop({ type: String})
     title = '';
