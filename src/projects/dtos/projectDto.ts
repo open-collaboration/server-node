@@ -1,20 +1,19 @@
 import { Allow, Length } from 'class-validator'
-import { Project } from './models'
+import { Project } from '../models/project'
 
-export class ProjectDto {
-
+export default class ProjectDto {
     @Allow()
-    id?: string;
+    id?: string
 
     @Length(4, 30)
-    title = '';
+    title = ''
 
     @Length(20, 200)
-    shortDescription = '';
+    shortDescription = ''
 
     @Length(300, 10000)
-    longDescription = '';
-   
+    longDescription = ''
+
     static fromProject(model: Project): ProjectDto {
         const out = new ProjectDto()
 

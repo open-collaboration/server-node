@@ -7,10 +7,9 @@ import UserRoutes from './users/routes'
 const app = express()
 
 async function bootstrap() {
-    await mongoose.connect('mongodb://root:changeme@localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true})
+    await mongoose.connect('mongodb://root:changeme@localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
 
     app.use(bodyParser.json())
-
 
     console.log('setting up routes')
     ProjectRoutes(app)
@@ -19,6 +18,5 @@ async function bootstrap() {
     console.log('starting server')
     app.listen(3000)
 }
-
 
 bootstrap()

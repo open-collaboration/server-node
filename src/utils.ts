@@ -1,9 +1,14 @@
 import express from 'express'
 
-export function asyncHandler(handler: (req: express.Request, res: express.Response) => Promise<void>): (req: express.Request, res: express.Response) => void {
+type AsyncHandler = (req: express.Request, res: express.Response) => Promise<void>
+
+// eslint-disable-next-line import/prefer-default-export
+export function handleAsync(
+    handler: AsyncHandler,
+): express.Handler {
     return (req: express.Request, res: express.Response) => {
         handler(req, res)
-            .catch(err => {
+            .catch((err) => {
                 console.error(err)
                 if (res.writable) {
                     res.status(499)

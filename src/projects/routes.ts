@@ -1,24 +1,19 @@
 import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import express from 'express'
-import { asyncHandler } from '../utils'
-import { ProjectDto } from './dtos'
-import { Project, ProjectModel } from './models'
-
-export default function(app: express.Express): void {
-    app.get('/projects', asyncHandler(listProjects))
-    app.post('/projects', asyncHandler(createProject))
-}
+import { handleAsync } from '../utils'
+import ProjectDto from './dtos/projectDto'
+import { Project, ProjectModel } from './models/project'
 
 async function listProjects(req: express.Request, res: express.Response) {
     let offset = parseInt(req.query.offset as string)
     let limit = parseInt(req.query.limit as string)
-    
-    if(Number.isNaN(offset)) {
+
+    if (Number.isNaN(offset)) {
         offset = 0
     }
 
-    if(Number.isNaN(limit)) {
+    if (Number.isNaN(limit)) {
         limit = 20
     }
 
@@ -50,3 +45,7 @@ async function createProject(req: express.Request, res: express.Response) {
     res.end()
 }
 
+export default function setupRoutes(app: express.Express): void {
+    app.get('/projects', handleAsync(listProjects))
+    app.post('/projects', handleAsync(createProject))
+}

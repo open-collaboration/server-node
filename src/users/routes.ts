@@ -1,27 +1,23 @@
 import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import express from 'express'
-import { asyncHandler } from '../utils'
-import { LoginDto, RegisterUserDto } from './dtos'
-import { User, UserModel } from './models'
 import { v4 as uuidv4 } from 'uuid'
-
-export default function (app: express.Express): void {
-    app.post('/register', asyncHandler(registerUser))
-    app.post('/login', asyncHandler(login))
-}
+import { handleAsync } from '../utils'
+import LoginDto from './dtos/loginDto'
+import RegisterUserDto from './dtos/registerUserDto'
+import { User, UserModel } from './models/user'
 
 async function registerUser(req: express.Request, res: express.Response) {
     const dto = plainToClass(RegisterUserDto, req.body)
     const validationErrors = await validate(dto)
-    if(validationErrors.length > 0) {
+    if (validationErrors.length > 0) {
         res.json(validationErrors)
         res.status(400)
         res.end()
         return
     }
 
-    const user = new User() 
+    const user = new User()
     user.email = dto.email
     user.username = dto.username
     await user.setPassword(dto.password)
@@ -50,27 +46,30 @@ async function login(req: express.Request, res: express.Response) {
     const dto = plainToClass(LoginDto, req.body)
 
     const user = await UserModel.findOne({
-        username: dto.username
+        username: dto.username,
     })
 
     if (user == null) {
-        console.log('user not found', {dto})
+        console.log('user not found', { dto })
         res.status(401)
         res.end()
         return
     }
-    
+
     if (await user.comparePassword(dto.password)) {
-        const sessionToken = uuidv4() 
+        const sessionToken = uuidv4()
         // TODO: store cookie in redis
 
         res.cookie('session', sessionToken)
         res.status(200)
         res.end()
-        return
     } else {
         res.status(401)
         res.end()
-        return
     }
+}
+
+export default function setupRoutes(app: express.Express): void {
+    app.post('/register', handleAsync(registerUser))
+    app.post('/login', handleAsync(login))
 }
