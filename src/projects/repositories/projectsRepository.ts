@@ -33,6 +33,13 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
             throw new Error('Cannot create a project that already has an id')
         }
 
-        await this.collection.insertOne(project)
+        const doc = {
+            _id: project.id,
+            title: project.title,
+            shortDescription: project.shortDescription,
+            longDescription: project.longDescription,
+        }
+
+        await this.collection.insertOne(doc)
     }
 }

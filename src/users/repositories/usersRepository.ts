@@ -50,10 +50,13 @@ export class UsersRepositoryMongo implements IUsersRepository {
             throw new Error('cannot create a user that already has an id')
         }
 
-        // TODO: this isn't good. If we do something like
-        // const a: User & { test: 'test' } = ...
-        // createUser(a), the property test will be inserted
-        // into the database
-        await this.collection.insertOne(user)
+        const doc = {
+            _id: user.id,
+            username: user.username,
+            email: user.email,
+            password: user.password,
+        }
+
+        await this.collection.insertOne(doc)
     }
 }
