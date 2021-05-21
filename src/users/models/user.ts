@@ -1,15 +1,12 @@
-import { getModelForClass, prop } from '@typegoose/typegoose'
 import bcrypt from 'bcrypt'
-import { Base } from '@typegoose/typegoose/lib/defaultClasses'
 
-export class User extends Base {
-    @prop({ type: String, unique: true })
+export default class User {
+    id?: string
+
     username = ''
 
-    @prop({ type: String, unique: true })
     email = ''
 
-    @prop({ type: String })
     password = ''
 
     async comparePassword(pwd: string): Promise<boolean> {
@@ -20,5 +17,3 @@ export class User extends Base {
         this.password = await bcrypt.hash(password, 10)
     }
 }
-
-export const UserModel = getModelForClass(User)

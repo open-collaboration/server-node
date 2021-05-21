@@ -1,4 +1,5 @@
-import { User, UserModel } from '../models/user'
+import * as mongo from 'mongodb'
+import User from '../models/user'
 
 export interface IUsersRepository {
     getUserByUsername(email: string): Promise<User | undefined>
@@ -7,23 +8,52 @@ export interface IUsersRepository {
 }
 
 export class UsersRepositoryMongo implements IUsersRepository {
-    async getUserByUsername(username: string): Promise<User | undefined> {
-        const doc = await UserModel.findOne({
-            username,
-        }).exec()
+    private collection: mongo.Collection
 
-        if (doc === null) {
+    constructor(db: mongo.Db) {
+        this.collection = db.collection('users')
+    }
+
+    async getUserByUsername(username: string): Promise<User | undefined> {
+        const doc = await this.collection.findOne({
+            username,
+        })
+
+        if (doc === undefined) {
             return undefined
         }
 
-        return doc
+        const user = new User()
+
+        user.id = doc._id
+        user.email = doc.email || ''
+        user.username = doc.username || ''
+        user.password = doc.password || ''
+
+        return user
     }
 
     async checkForConflict(username: string, email: string): Promise<boolean> {
-        return await UserModel.exists({ username }) || await UserModel.exists({ email })
+        const doc = await this.collection.findOne({
+            $or: [{ username }, { email }],
+        }, {
+            projection: {
+                _id: 1,
+            },
+        })
+
+        return doc === undefined
     }
 
     async createUser(user: User): Promise<void> {
-        await UserModel.create(user)
+        if (user.id !== undefined) {
+            throw new Error('cannot create a user that already has an id')
+        }
+
+        // TODO: this isn't good. If we do something like
+        // const a: User & { test: 'test' } = ...
+        // createUser(a), the property test will be inserted
+        // into the database
+        await this.collection.insertOne(user)
     }
 }

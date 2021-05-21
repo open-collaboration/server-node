@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { handleAsync } from '../utils'
 import LoginDto from './dtos/loginDto'
 import RegisterUserDto from './dtos/registerUserDto'
-import { User } from './models/user'
+import User from './models/user'
 import { IUsersRepository } from './repositories/usersRepository'
 
 async function registerUser(

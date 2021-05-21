@@ -3,13 +3,13 @@ import { validate } from 'class-validator'
 import express from 'express'
 import { handleAsync } from '../utils'
 import ProjectDto from './dtos/projectDto'
-import { Project } from './models/project'
-import { ProjectsRepositoryMongo } from './repositories/projectsRepository'
+import Project from './models/project'
+import { IProjectsRepository } from './repositories/projectsRepository'
 
 async function listProjects(
     req: express.Request,
     res: express.Response,
-    projectsRepository: ProjectsRepositoryMongo,
+    projectsRepository: IProjectsRepository,
 ) {
     let offset = parseInt(req.query.offset as string)
     let limit = parseInt(req.query.limit as string)
@@ -31,7 +31,7 @@ async function listProjects(
 async function createProject(
     req: express.Request,
     res: express.Response,
-    projectsRepository: ProjectsRepositoryMongo,
+    projectsRepository: IProjectsRepository,
 ) {
     const dto = plainToClass(ProjectDto, req.body)
 
@@ -56,7 +56,7 @@ async function createProject(
 
 export default function setupRoutes(
     app: express.Express,
-    projectsRepository: ProjectsRepositoryMongo,
+    projectsRepository: IProjectsRepository,
 ): void {
     app.get('/projects', handleAsync(listProjects, projectsRepository))
     app.post('/projects', handleAsync(createProject, projectsRepository))

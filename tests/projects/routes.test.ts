@@ -1,6 +1,6 @@
 import request from 'supertest'
 import { LoremIpsum } from 'lorem-ipsum'
-import { Project } from '../../src/projects/models/project'
+import Project from '../../src/projects/models/project'
 import { IProjectsRepository } from '../../src/projects/repositories/projectsRepository'
 import catchUnimplemented from '../helpers/unimplementedCatcher'
 import * as server from '../../src/server'

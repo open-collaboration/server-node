@@ -1,5 +1,5 @@
 import { Allow, Length } from 'class-validator'
-import { Project } from '../models/project'
+import Project from '../models/project'
 
 export default class ProjectDto {
     @Allow()
@@ -17,7 +17,7 @@ export default class ProjectDto {
     static fromProject(model: Project): ProjectDto {
         const out = new ProjectDto()
 
-        out.id = model._id.toHexString()
+        out.id = model.id
         out.title = model.title
         out.shortDescription = model.shortDescription
         out.longDescription = model.longDescription

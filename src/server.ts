@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser'
 import express from 'express'
-import mongoose from 'mongoose'
+import { MongoClient } from 'mongodb'
 import { IProjectsRepository, ProjectsRepositoryMongo } from './projects/repositories/projectsRepository'
 import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
@@ -23,10 +23,11 @@ export async function createApp(
 
 export async function bootstrap(): Promise<void> {
     console.log('connecting to db')
-    await mongoose.connect('mongodb://root:changeme@localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
+    const mongoClient = await new MongoClient('mongodb://root:changeme@localhost:27017').connect()
+    const mongoDb = mongoClient.db('opencollab')
 
-    const projectsRepository = new ProjectsRepositoryMongo()
-    const usersRepository = new UsersRepositoryMongo()
+    const projectsRepository = new ProjectsRepositoryMongo(mongoDb)
+    const usersRepository = new UsersRepositoryMongo(mongoDb)
 
     const app = await createApp(projectsRepository, usersRepository)
 
