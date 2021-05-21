@@ -3,9 +3,14 @@ import { validate } from 'class-validator'
 import express from 'express'
 import { handleAsync } from '../utils'
 import ProjectDto from './dtos/projectDto'
-import { Project, ProjectModel } from './models/project'
+import { Project } from './models/project'
+import { ProjectsRepository } from './repositories/projectsRepository'
 
-async function listProjects(req: express.Request, res: express.Response) {
+async function listProjects(
+    req: express.Request,
+    res: express.Response,
+    projectsRepository: ProjectsRepository,
+) {
     let offset = parseInt(req.query.offset as string)
     let limit = parseInt(req.query.limit as string)
 
@@ -17,13 +22,17 @@ async function listProjects(req: express.Request, res: express.Response) {
         limit = 20
     }
 
-    const projects = await ProjectModel.find().skip(offset).limit(limit).exec()
+    const projects = await projectsRepository.listProjects(offset, limit)
 
     res.json(projects.map(ProjectDto.fromProject))
     res.end()
 }
 
-async function createProject(req: express.Request, res: express.Response) {
+async function createProject(
+    req: express.Request,
+    res: express.Response,
+    projectsRepository: ProjectsRepository,
+) {
     const dto = plainToClass(ProjectDto, req.body)
 
     const validationErrors = await validate(dto, { forbidNonWhitelisted: true })
@@ -39,13 +48,16 @@ async function createProject(req: express.Request, res: express.Response) {
     model.shortDescription = dto.shortDescription
     model.longDescription = dto.longDescription
 
-    await ProjectModel.create(model)
+    await projectsRepository.createProject(model)
 
     res.status(201)
     res.end()
 }
 
-export default function setupRoutes(app: express.Express): void {
-    app.get('/projects', handleAsync(listProjects))
-    app.post('/projects', handleAsync(createProject))
+export default function setupRoutes(
+    app: express.Express,
+    projectsRepository: ProjectsRepository,
+): void {
+    app.get('/projects', handleAsync(listProjects, projectsRepository))
+    app.post('/projects', handleAsync(createProject, projectsRepository))
 }

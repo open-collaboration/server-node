@@ -5,9 +5,14 @@ import { v4 as uuidv4 } from 'uuid'
 import { handleAsync } from '../utils'
 import LoginDto from './dtos/loginDto'
 import RegisterUserDto from './dtos/registerUserDto'
-import { User, UserModel } from './models/user'
+import { User } from './models/user'
+import { IUsersRepository } from './repositories/usersRepository'
 
-async function registerUser(req: express.Request, res: express.Response) {
+async function registerUser(
+    req: express.Request,
+    res: express.Response,
+    usersRepository: IUsersRepository,
+) {
     const dto = plainToClass(RegisterUserDto, req.body)
     const validationErrors = await validate(dto)
     if (validationErrors.length > 0) {
@@ -22,34 +27,29 @@ async function registerUser(req: express.Request, res: express.Response) {
     user.username = dto.username
     await user.setPassword(dto.password)
 
-    if (await UserModel.exists({ username: user.username })) {
+    if (usersRepository.checkForConflict(user.username, user.email)) {
         // TODO: send error details to client
         res.status(409)
         res.end()
         return
     }
 
-    if (await UserModel.exists({ email: user.email })) {
-        // TODO: send error details to client
-        res.status(409)
-        res.end()
-        return
-    }
-
-    await UserModel.create(user)
+    await usersRepository.createUser(user)
 
     res.status(201)
     res.end()
 }
 
-async function login(req: express.Request, res: express.Response) {
+async function login(
+    req: express.Request,
+    res: express.Response,
+    usersRepository: IUsersRepository,
+) {
     const dto = plainToClass(LoginDto, req.body)
 
-    const user = await UserModel.findOne({
-        username: dto.username,
-    })
+    const user = await usersRepository.getUserByUsername(dto.username)
 
-    if (user == null) {
+    if (user === undefined) {
         console.log('user not found', { dto })
         res.status(401)
         res.end()
@@ -69,7 +69,7 @@ async function login(req: express.Request, res: express.Response) {
     }
 }
 
-export default function setupRoutes(app: express.Express): void {
-    app.post('/register', handleAsync(registerUser))
-    app.post('/login', handleAsync(login))
+export default function setupRoutes(app: express.Express, usersRepository: IUsersRepository): void {
+    app.post('/register', handleAsync(registerUser, usersRepository))
+    app.post('/login', handleAsync(login, usersRepository))
 }
