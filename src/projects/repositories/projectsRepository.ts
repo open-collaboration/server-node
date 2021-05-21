@@ -5,7 +5,7 @@ export interface IProjectsRepository {
     createProject(project: Project): Promise<void>
 }
 
-export class ProjectsRepository implements IProjectsRepository {
+export class ProjectsRepositoryMongo implements IProjectsRepository {
     listProjects(offset: number, limit: number): Promise<Project[]> {
         return ProjectModel.find().skip(offset).limit(limit).exec()
     }

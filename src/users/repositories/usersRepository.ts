@@ -6,7 +6,7 @@ export interface IUsersRepository {
     createUser(user: User): Promise<void>
 }
 
-export class UsersRepository implements IUsersRepository {
+export class UsersRepositoryMongo implements IUsersRepository {
     async getUserByUsername(username: string): Promise<User | undefined> {
         const doc = await UserModel.findOne({
             username,
