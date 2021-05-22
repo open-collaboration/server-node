@@ -4,6 +4,7 @@ import Project from '../../src/projects/models/project'
 import { IProjectsRepository } from '../../src/projects/repositories/projectsRepository'
 import catchUnimplemented from '../helpers/unimplementedCatcher'
 import * as server from '../../src/server'
+import ProjectDto from '../../src/projects/dtos/projectDto'
 
 const lorem = new LoremIpsum()
 
@@ -12,14 +13,20 @@ describe('project routes', () => {
     let repo: IProjectsRepository
 
     beforeEach(async () => {
+        const fakeProjects = [
+            new Project(),
+            new Project(),
+            new Project(),
+            new Project(),
+        ].map((x, i) => {
+            // eslint-disable-next-line no-param-reassign
+            x.id = i.toString()
+            return x
+        })
+
         repo = catchUnimplemented({
             createProject: (project) => {},
-            listProjects: async (offset, limit) => [
-                new Project(),
-                new Project(),
-                new Project(),
-                new Project(),
-            ],
+            listProjects: async (offset, limit) => fakeProjects.slice(offset, limit),
         } as IProjectsRepository)
 
         app = await server.createApp(repo, catchUnimplemented({}))
@@ -55,8 +62,56 @@ describe('project routes', () => {
     })
 
     describe('list projects', () => {
-        it('should list all projects', () => {
+        const cases: { ids: string[], offset?: number, limit?: number }[] = [
+            {
+                ids: ['0', '1', '2', '3'],
+            },
+            {
+                offset: 2,
+                ids: ['2', '3'],
+            },
+            {
+                offset: -1,
+                ids: ['0', '1', '2', '3'],
+            },
+            {
+                limit: 1,
+                offset: 3,
+                ids: ['3'],
+            },
+            {
+                limit: -1,
+                ids: ['0', '1', '2', '3'],
+            },
+            {
+                limit: 0,
+                ids: ['0', '1', '2', '3'],
+            },
+            {
+                limit: 1,
+                ids: ['0'],
+            },
+        ]
 
-        })
+        for (const [i, testCase] of Object.entries(cases)) {
+            it(`case ${i}`, async () => {
+                await request(app)
+                    .get('/projects')
+                    .query({
+                        offset: testCase.offset,
+                        limit: testCase.limit,
+                    })
+                    .expect(200)
+                    .expect((res) => {
+                        const ids = (res.body as ProjectDto[]).map((x) => x.id)
+                        const idsMatch = ids
+                            .every((id) => id !== undefined && testCase.ids.includes(id))
+
+                        if (!idsMatch) {
+                            throw new Error(`The returned projects dont match the expected projects. Returned ids: ${ids}, Expected ids: ${testCase.ids}`)
+                        }
+                    })
+            })
+        }
     })
 })

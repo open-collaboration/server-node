@@ -14,11 +14,11 @@ async function listProjects(
     let offset = parseInt(req.query.offset as string)
     let limit = parseInt(req.query.limit as string)
 
-    if (Number.isNaN(offset)) {
+    if (Number.isNaN(offset) || offset < 0) {
         offset = 0
     }
 
-    if (Number.isNaN(limit)) {
+    if (Number.isNaN(limit) || limit <= 0) {
         limit = 20
     }
 

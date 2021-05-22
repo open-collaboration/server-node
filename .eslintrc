@@ -38,6 +38,8 @@
         "radix": "off",
         "no-console": "off",
         "class-methods-use-this": "off",
-        "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }]
+        "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
+        "@typescript-eslint/no-loop-func": "off",
+        "no-restricted-syntax": "off"
     }
 }
