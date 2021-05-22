@@ -43,6 +43,12 @@ async function createProject(
         return
     }
 
+    if (dto.id !== undefined) {
+        // TODO: send proper error message
+        res.status(400)
+        res.end()
+    }
+
     const model = new Project()
     model.title = dto.title
     model.shortDescription = dto.shortDescription

@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "dev": "ts-node src/main.ts",
-    "mocha": "ts-mocha tests/**/*.test.ts"
+    "test": "ts-mocha tests/**/*.test.ts"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
