@@ -1,6 +1,8 @@
-import bodyParser from 'body-parser'
 import express from 'express'
 import { MongoClient } from 'mongodb'
+import { Logger } from './logger'
+import attachRequestContext from './middleware/attachContext'
+import attachRequestId from './middleware/requestId'
 import { IProjectsRepository, ProjectsRepositoryMongo } from './projects/repositories/projectsRepository'
 import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
@@ -10,11 +12,14 @@ export async function createApp(
     projectsRepository: IProjectsRepository,
     usersRepository: IUsersRepository,
 ): Promise<express.Application> {
+    const logger = Logger.create()
     const app = express()
 
-    app.use(bodyParser.json())
+    app.use(attachRequestContext)
+    app.use(attachRequestId)
+    app.use(express.json())
 
-    console.log('setting up routes')
+    logger.info('setting up routes')
     ProjectRoutes(app, projectsRepository)
     UserRoutes(app, usersRepository)
 
@@ -22,8 +27,10 @@ export async function createApp(
 }
 
 export async function bootstrap(): Promise<void> {
-    console.log('connecting to db')
-    const mongoClient = await new MongoClient('mongodb://root:changeme@localhost:27017').connect()
+    const logger = Logger.create()
+
+    logger.info('connecting to db')
+    const mongoClient = await new MongoClient('mongodb://root:changeme@localhost:27017', { useUnifiedTopology: true }).connect()
     const mongoDb = mongoClient.db('opencollab')
 
     const projectsRepository = new ProjectsRepositoryMongo(mongoDb)
@@ -31,6 +38,6 @@ export async function bootstrap(): Promise<void> {
 
     const app = await createApp(projectsRepository, usersRepository)
 
-    console.log('starting server')
+    logger.info('starting server')
     app.listen(3000)
 }

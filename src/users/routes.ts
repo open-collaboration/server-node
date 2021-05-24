@@ -2,6 +2,7 @@ import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import express from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { Logger } from '../logger'
 import { handleAsync } from '../utils'
 import LoginDto from './dtos/loginDto'
 import RegisterUserDto from './dtos/registerUserDto'
@@ -45,18 +46,22 @@ async function login(
     res: express.Response,
     usersRepository: IUsersRepository,
 ) {
+    const logger = Logger.create()
     const dto = plainToClass(LoginDto, req.body)
 
     const user = await usersRepository.getUserByUsername(dto.username)
 
     if (user === undefined) {
-        console.log('user not found', { dto })
+        logger.info('user not found', { dto })
+
         res.status(401)
         res.end()
         return
     }
 
     if (await user.comparePassword(dto.password)) {
+        logger.info('user authenticated')
+
         const sessionToken = uuidv4()
         // TODO: store cookie in redis
 

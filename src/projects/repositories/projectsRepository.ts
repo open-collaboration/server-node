@@ -3,7 +3,7 @@ import Project from '../models/project'
 
 export interface IProjectsRepository {
     listProjects(offset: number, limit: number): Promise<Project[]>
-    createProject(project: Project): Promise<void>
+    createProject(project: Project): Promise<string>
 }
 
 export class ProjectsRepositoryMongo implements IProjectsRepository {
@@ -28,7 +28,7 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
         })
     }
 
-    async createProject(project: Project): Promise<void> {
+    async createProject(project: Project): Promise<string> {
         if (project.id !== undefined) {
             throw new Error('Cannot create a project that already has an id')
         }
@@ -40,6 +40,6 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
             longDescription: project.longDescription,
         }
 
-        await this.collection.insertOne(doc)
+        return (await this.collection.insertOne(doc)).insertedId
     }
 }

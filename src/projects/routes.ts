@@ -1,7 +1,6 @@
-import { plainToClass } from 'class-transformer'
-import { validate } from 'class-validator'
 import express from 'express'
-import { handleAsync } from '../utils'
+import { Logger } from '../logger'
+import { handleAsync, validateDto } from '../utils'
 import ProjectDto from './dtos/projectDto'
 import Project from './models/project'
 import { IProjectsRepository } from './repositories/projectsRepository'
@@ -33,10 +32,12 @@ async function createProject(
     res: express.Response,
     projectsRepository: IProjectsRepository,
 ) {
-    const dto = plainToClass(ProjectDto, req.body)
+    const logger = Logger.create()
 
-    const validationErrors = await validate(dto, { forbidNonWhitelisted: true })
+    const [dto, validationErrors] = await validateDto(ProjectDto, req.body)
     if (validationErrors.length > 0) {
+        logger.info('failed to validate dto', { validationErrors })
+
         res.json(validationErrors)
         res.status(400)
         res.end()
@@ -44,6 +45,8 @@ async function createProject(
     }
 
     if (dto.id !== undefined) {
+        logger.info('cannot create project with an id')
+
         // TODO: send proper error message
         res.status(400)
         res.end()
@@ -54,8 +57,11 @@ async function createProject(
     model.shortDescription = dto.shortDescription
     model.longDescription = dto.longDescription
 
-    await projectsRepository.createProject(model)
+    const projectId = await projectsRepository.createProject(model)
 
+    logger.info('successfully created project', { projectId })
+
+    res.header('Location', `/projects/${projectId}`)
     res.status(201)
     res.end()
 }
