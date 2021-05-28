@@ -1,6 +1,7 @@
 import express from 'express'
 import { MongoClient } from 'mongodb'
 import * as redis from 'redis'
+import cookieParser from 'cookie-parser'
 import { KVStoreRedis } from './facades/kvStore'
 import { Logger } from './logger'
 import attachRequestContext from './middleware/attachContext'
@@ -10,7 +11,6 @@ import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
 import UserRoutes from './users/routes'
 import { ISessionsService, SessionsServiceKvStore } from './users/sessionsService'
-import cookieParser from 'cookie-parser'
 
 export async function createApp(
     projectsRepository: IProjectsRepository,

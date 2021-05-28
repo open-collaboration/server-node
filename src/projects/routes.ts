@@ -82,6 +82,18 @@ async function createProject(
         throw new Error('User does not have id')
     }
 
+    // Check if user already owns a project.
+    // Each user can only own a single project.
+    const existingProject = await projectsRepository.getProjectByUserId(user.id)
+    if (existingProject !== undefined) {
+        logger.info('User already owns a project')
+
+        // TODO: send proper error message
+        res.status(409)
+        res.end()
+        return
+    }
+
     const model = new Project()
     model.title = dto.title
     model.shortDescription = dto.shortDescription
