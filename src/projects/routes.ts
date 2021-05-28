@@ -28,6 +28,26 @@ async function listProjects(
     res.end()
 }
 
+async function getProject(
+    req: express.Request,
+    res: express.Response,
+    projectsRepository: IProjectsRepository,
+) {
+    const projectId = req.params.id
+
+    const project = await projectsRepository.getProjectById(projectId)
+    if (project === undefined) {
+        res.status(404)
+        res.end()
+        return
+    }
+
+    const dto = ProjectDto.fromProject(project)
+    res.status(200)
+    res.json(dto)
+    res.end()
+}
+
 async function createProject(
     req: express.Request,
     res: express.Response,
@@ -109,7 +129,7 @@ async function createProject(
     res.end()
 }
 
-async function getProject(
+async function deleteProject(
     req: express.Request,
     res: express.Response,
     projectsRepository: IProjectsRepository,
@@ -159,6 +179,7 @@ export default function setupRoutes(
     sessionsService: ISessionsService,
 ): void {
     app.get('/projects', handleAsync(listProjects, projectsRepository))
+    app.get('/projects/:id', handleAsync(getProject, projectsRepository))
     app.post('/projects', handleAsync(createProject, projectsRepository, sessionsService))
-    app.delete('/projects/:id', handleAsync(getProject, projectsRepository, sessionsService))
+    app.delete('/projects/:id', handleAsync(deleteProject, projectsRepository, sessionsService))
 }
