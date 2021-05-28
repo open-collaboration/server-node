@@ -25,7 +25,7 @@ export class UsersRepositoryMongo implements IUsersRepository {
 
         const user = new User()
 
-        user.id = doc._id
+        user.id = doc._id.toString()
         user.email = doc.email || ''
         user.username = doc.username || ''
         user.password = doc.password || ''
@@ -42,7 +42,7 @@ export class UsersRepositoryMongo implements IUsersRepository {
             },
         })
 
-        return doc === undefined
+        return doc != null
     }
 
     async createUser(user: User): Promise<void> {

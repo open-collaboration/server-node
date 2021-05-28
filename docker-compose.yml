@@ -24,5 +24,13 @@ services:
     volumes:
       - dbdata:/data/db
 
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
 volumes:
   dbdata:
+  redisdata:

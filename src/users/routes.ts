@@ -1,13 +1,13 @@
 import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import express from 'express'
-import { v4 as uuidv4 } from 'uuid'
 import { Logger } from '../logger'
 import { handleAsync } from '../utils'
 import LoginDto from './dtos/loginDto'
 import RegisterUserDto from './dtos/registerUserDto'
 import User from './models/user'
 import { IUsersRepository } from './repositories/usersRepository'
+import { ISessionsService } from './sessionsService'
 
 async function registerUser(
     req: express.Request,
@@ -28,7 +28,7 @@ async function registerUser(
     user.username = dto.username
     await user.setPassword(dto.password)
 
-    if (usersRepository.checkForConflict(user.username, user.email)) {
+    if (await usersRepository.checkForConflict(user.username, user.email)) {
         // TODO: send error details to client
         res.status(409)
         res.end()
@@ -45,6 +45,7 @@ async function login(
     req: express.Request,
     res: express.Response,
     usersRepository: IUsersRepository,
+    sessionsService: ISessionsService,
 ) {
     const logger = Logger.create()
     const dto = plainToClass(LoginDto, req.body)
@@ -62,8 +63,7 @@ async function login(
     if (await user.comparePassword(dto.password)) {
         logger.info('user authenticated')
 
-        const sessionToken = uuidv4()
-        // TODO: store cookie in redis
+        const sessionToken = await sessionsService.createSession(user)
 
         res.cookie('session', sessionToken)
         res.status(200)
@@ -74,7 +74,11 @@ async function login(
     }
 }
 
-export default function setupRoutes(app: express.Express, usersRepository: IUsersRepository): void {
+export default function setupRoutes(
+    app: express.Express,
+    usersRepository: IUsersRepository,
+    sessionsService: ISessionsService,
+): void {
     app.post('/register', handleAsync(registerUser, usersRepository))
-    app.post('/login', handleAsync(login, usersRepository))
+    app.post('/login', handleAsync(login, usersRepository, sessionsService))
 }
