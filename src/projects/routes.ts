@@ -109,6 +109,50 @@ async function createProject(
     res.end()
 }
 
+async function getProject(
+    req: express.Request,
+    res: express.Response,
+    projectsRepository: IProjectsRepository,
+    sessionsService: ISessionsService,
+) {
+    const projectId: string = req.params.id
+
+    if (req.cookies.session === undefined) {
+        res.status(401)
+        res.end()
+        return
+    }
+
+    const user = await sessionsService.getSession(req.cookies.session)
+    if (user === undefined) {
+        res.status(401)
+        res.end()
+        return
+    }
+
+    const project = await projectsRepository.getProjectById(projectId)
+    if (project === undefined) {
+        res.status(404)
+        res.end()
+        return
+    }
+
+    if (project.userId !== user.id) {
+        res.status(401)
+        res.end()
+        return
+    }
+
+    if (project.id === undefined) {
+        throw new Error('Project has no id')
+    }
+
+    await projectsRepository.deleteProjectById(project.id)
+
+    res.status(204)
+    res.end()
+}
+
 export default function setupRoutes(
     app: express.Express,
     projectsRepository: IProjectsRepository,
@@ -116,4 +160,5 @@ export default function setupRoutes(
 ): void {
     app.get('/projects', handleAsync(listProjects, projectsRepository))
     app.post('/projects', handleAsync(createProject, projectsRepository, sessionsService))
+    app.delete('/projects/:id', handleAsync(getProject, projectsRepository, sessionsService))
 }
