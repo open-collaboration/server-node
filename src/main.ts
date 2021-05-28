@@ -1,3 +1,3 @@
 import { bootstrap } from './server'
 
-bootstrap()
+void bootstrap()

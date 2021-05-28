@@ -20,9 +20,9 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
             const project = new Project()
 
             project.id = x._id
-            project.title = x.title || ''
-            project.shortDescription = x.shortDescription || ''
-            project.title = x.title || ''
+            project.title = x.title ?? ''
+            project.shortDescription = x.shortDescription ?? ''
+            project.title = x.title ?? ''
 
             return project
         })

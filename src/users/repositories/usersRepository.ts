@@ -26,9 +26,9 @@ export class UsersRepositoryMongo implements IUsersRepository {
         const user = new User()
 
         user.id = doc._id.toString()
-        user.email = doc.email || ''
-        user.username = doc.username || ''
-        user.password = doc.password || ''
+        user.email = doc.email ?? ''
+        user.username = doc.username ?? ''
+        user.password = doc.password ?? ''
 
         return user
     }

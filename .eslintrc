@@ -40,6 +40,9 @@
         "class-methods-use-this": "off",
         "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
         "@typescript-eslint/no-loop-func": "off",
-        "no-restricted-syntax": "off"
+        "no-restricted-syntax": "off",
+        "@typescript-eslint/no-floating-promises": "error",
+        "@typescript-eslint/strict-boolean-expressions": "error",
+        "no-void": ["error", { "allowAsStatement": true}]
     }
 }
