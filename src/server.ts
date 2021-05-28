@@ -10,6 +10,7 @@ import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
 import UserRoutes from './users/routes'
 import { ISessionsService, SessionsServiceKvStore } from './users/sessionsService'
+import cookieParser from 'cookie-parser'
 
 export async function createApp(
     projectsRepository: IProjectsRepository,
@@ -22,9 +23,10 @@ export async function createApp(
     app.use(attachRequestContext)
     app.use(attachRequestId)
     app.use(express.json())
+    app.use(cookieParser())
 
     logger.info('setting up routes')
-    ProjectRoutes(app, projectsRepository)
+    ProjectRoutes(app, projectsRepository, sessionsService)
     UserRoutes(app, usersRepository, sessionsService)
 
     return app
@@ -42,7 +44,7 @@ export async function bootstrap(): Promise<void> {
 
     const projectsRepository = new ProjectsRepositoryMongo(mongoDb)
     const usersRepository = new UsersRepositoryMongo(mongoDb)
-    const sessionsService = new SessionsServiceKvStore(redisKvStore)
+    const sessionsService = new SessionsServiceKvStore(redisKvStore, usersRepository)
 
     const app = await createApp(projectsRepository, usersRepository, sessionsService)
 

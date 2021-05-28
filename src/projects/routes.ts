@@ -1,5 +1,6 @@
 import express from 'express'
 import { Logger } from '../logger'
+import { ISessionsService } from '../users/sessionsService'
 import { handleAsync, validateDto } from '../utils'
 import ProjectDto from './dtos/projectDto'
 import Project from './models/project'
@@ -31,6 +32,7 @@ async function createProject(
     req: express.Request,
     res: express.Response,
     projectsRepository: IProjectsRepository,
+    sessionsService: ISessionsService,
 ) {
     const logger = Logger.create()
 
@@ -52,10 +54,39 @@ async function createProject(
         res.end()
     }
 
+    let sessionToken: string | undefined
+    if (typeof req.cookies.session === 'string') {
+        sessionToken = req.cookies.session
+    }
+
+    if (sessionToken === undefined) {
+        logger.info('Session token not set')
+
+        // TODO: send proper error message
+        res.status(401)
+        res.end()
+        return
+    }
+
+    const user = await sessionsService.getSession(sessionToken)
+    if (user === undefined) {
+        logger.info('Invalid session')
+
+        // TODO: send proper error message
+        res.status(401)
+        res.end()
+        return
+    }
+
+    if (user.id === undefined) {
+        throw new Error('User does not have id')
+    }
+
     const model = new Project()
     model.title = dto.title
     model.shortDescription = dto.shortDescription
     model.longDescription = dto.longDescription
+    model.userId = user.id
 
     const projectId = await projectsRepository.createProject(model)
 
@@ -69,7 +100,8 @@ async function createProject(
 export default function setupRoutes(
     app: express.Express,
     projectsRepository: IProjectsRepository,
+    sessionsService: ISessionsService,
 ): void {
     app.get('/projects', handleAsync(listProjects, projectsRepository))
-    app.post('/projects', handleAsync(createProject, projectsRepository))
+    app.post('/projects', handleAsync(createProject, projectsRepository, sessionsService))
 }

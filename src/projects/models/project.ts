@@ -6,4 +6,6 @@ export default class Project {
     shortDescription = ''
 
     longDescription = ''
+
+    userId = ''
 }

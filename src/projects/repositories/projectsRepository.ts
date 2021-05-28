@@ -22,7 +22,9 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
             project.id = x._id
             project.title = x.title ?? ''
             project.shortDescription = x.shortDescription ?? ''
+            project.longDescription = x.longDescription ?? ''
             project.title = x.title ?? ''
+            project.userId = x.userId ?? ''
 
             return project
         })
@@ -38,6 +40,7 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
             title: project.title,
             shortDescription: project.shortDescription,
             longDescription: project.longDescription,
+            userId: project.userId,
         }
 
         return (await this.collection.insertOne(doc)).insertedId

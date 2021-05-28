@@ -3,6 +3,7 @@ import User from '../models/user'
 
 export interface IUsersRepository {
     getUserByUsername(email: string): Promise<User | undefined>
+    getUserById(userId: string): Promise<User | undefined>
     checkForConflict(username: string, email: string): Promise<boolean>
     createUser(user: User): Promise<void>
 }
@@ -14,6 +15,18 @@ export class UsersRepositoryMongo implements IUsersRepository {
         this.collection = db.collection('users')
     }
 
+    // eslint-disable-next-line
+    docToUser(doc: any): User {
+        const user = new User()
+
+        user.id = doc._id.toString()
+        user.email = doc.email ?? ''
+        user.username = doc.username ?? ''
+        user.password = doc.password ?? ''
+
+        return user
+    }
+
     async getUserByUsername(username: string): Promise<User | undefined> {
         const doc = await this.collection.findOne({
             username,
@@ -23,14 +36,19 @@ export class UsersRepositoryMongo implements IUsersRepository {
             return undefined
         }
 
-        const user = new User()
+        return this.docToUser(doc)
+    }
 
-        user.id = doc._id.toString()
-        user.email = doc.email ?? ''
-        user.username = doc.username ?? ''
-        user.password = doc.password ?? ''
+    async getUserById(userId: string): Promise<User | undefined> {
+        const doc = await this.collection.findOne({
+            _id: new mongo.ObjectId(userId),
+        })
 
-        return user
+        if (doc === undefined) {
+            return undefined
+        }
+
+        return this.docToUser(doc)
     }
 
     async checkForConflict(username: string, email: string): Promise<boolean> {

@@ -1,6 +1,7 @@
 import { v4 } from 'uuid'
 import { IKVStore } from '../facades/kvStore'
 import User from './models/user'
+import { IUsersRepository } from './repositories/usersRepository'
 
 /**
  * A service for managing user sessions.
@@ -9,11 +10,11 @@ export interface ISessionsService {
     createSession(user: User): Promise<string>
 
     /**
-     * Get a session's user id if it exists
+     * Get a session's user if the session exists
      * @param sessionToken The session token
-     * @returns The user id if the session exists
+     * @returns The session's user if the session exists
      */
-    getSession(sessionToken: string): Promise<string | undefined>
+    getSession(sessionToken: string): Promise<User | undefined>
 
     revokeSessions(user: User): Promise<void>
 }
@@ -33,7 +34,10 @@ export interface ISessionsService {
  * @see SessionsServiceKvStore.tokensByUser
  */
 export class SessionsServiceKvStore implements ISessionsService {
-    constructor(private store: IKVStore) {}
+    constructor(
+        private store: IKVStore,
+        private usersRepository: IUsersRepository,
+    ) {}
 
     /**
      * Get the store key that maps a session token to a user id.
@@ -66,8 +70,13 @@ export class SessionsServiceKvStore implements ISessionsService {
         return token
     }
 
-    getSession(sessionToken: string): Promise<string | undefined> {
-        return this.store.get(this.userByToken(sessionToken))
+    async getSession(sessionToken: string): Promise<User | undefined> {
+        const userId = await this.store.get(this.userByToken(sessionToken))
+        if (userId === undefined) {
+            return undefined
+        }
+
+        return this.usersRepository.getUserById(userId)
     }
 
     async revokeSessions(user: User): Promise<void> {
