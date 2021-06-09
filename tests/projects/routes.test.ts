@@ -71,7 +71,7 @@ describe('project routes', () => {
             roles: [
                 {
                     title: 'this is a role',
-                    description: lorem.generateParagraphs(1),
+                    description: lorem.generateWords(30),
                     skills: ['skill one', 'skill two'],
                 },
             ],

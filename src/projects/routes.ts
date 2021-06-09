@@ -2,6 +2,7 @@ import express from 'express'
 import { Logger } from '../logger'
 import { ISessionsService } from '../users/sessionsService'
 import { handleAsync, validateDto } from '../utils'
+import { PROJECT_DTO_GROUP_CREATE } from './dtos/dtoGroups'
 import ProjectDto from './dtos/projectDto'
 import ProjectSummaryDto from './dtos/projectSummaryDto'
 import { IProjectsRepository } from './repositories/projectsRepository'
@@ -25,8 +26,10 @@ async function listProjects(
 
     const projectSummaries = await projectsRepository.listProjects(offset, limit)
 
-    res.json(projectSummaries.map(ProjectSummaryDto.fromProject))
-    res.end()
+    res
+        .status(200)
+        .json(projectSummaries.map(ProjectSummaryDto.fromProject))
+        .end()
 }
 
 async function getProject(
@@ -44,9 +47,10 @@ async function getProject(
     }
 
     const dto = ProjectDto.fromProject(project)
-    res.status(200)
-    res.json(dto)
-    res.end()
+    res
+        .status(200)
+        .json(dto)
+        .end()
 }
 
 async function createProject(
@@ -57,13 +61,18 @@ async function createProject(
 ) {
     const logger = Logger.create()
 
-    const [dto, validationErrors] = await validateDto(ProjectDto, req.body)
+    const [dto, validationErrors] = await validateDto(
+        ProjectDto,
+        req.body,
+        [PROJECT_DTO_GROUP_CREATE],
+    )
     if (validationErrors.length > 0) {
         logger.info('failed to validate dto', { validationErrors })
 
-        res.json(validationErrors)
-        res.status(400)
-        res.end()
+        res
+            .status(400)
+            .json(validationErrors)
+            .end()
         return
     }
 

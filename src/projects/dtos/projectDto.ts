@@ -1,12 +1,19 @@
 import { Type } from 'class-transformer'
 import {
-    Allow, ArrayMaxSize, ArrayMinSize, IsArray, Length, ValidateNested,
+    Allow, ArrayMaxSize, ArrayMinSize, IsArray, IsEmpty, IsNotEmpty, Length, ValidateNested,
 } from 'class-validator'
 import Project from '../models/project'
+import { PROJECT_DTO_GROUP_CREATE, PROJECT_DTO_GROUP_UPDATE } from './dtoGroups'
 import RoleDto from './roleDto'
 
 export default class ProjectDto {
     @Allow()
+    @IsEmpty({
+        groups: [PROJECT_DTO_GROUP_CREATE],
+    })
+    @IsNotEmpty({
+        groups: [PROJECT_DTO_GROUP_UPDATE],
+    })
     id?: string
 
     @Length(4, 30)
@@ -19,10 +26,12 @@ export default class ProjectDto {
     longDescription = ''
 
     @IsArray()
-    @Type(() => RoleDto)
     @ArrayMinSize(1)
     @ArrayMaxSize(5)
-    @ValidateNested()
+    @ValidateNested({
+        each: true,
+    })
+    @Type(() => RoleDto)
     roles: RoleDto[] = []
 
     static fromProject(model: Project): ProjectDto {

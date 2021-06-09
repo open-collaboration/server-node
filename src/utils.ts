@@ -12,9 +12,6 @@ export function handleAsync<T extends unknown[]>(
 ): express.Handler {
     return (req: express.Request, res: express.Response) => {
         handler(req, res, ...injected)
-            .then(() => {
-                console.log(res.statusCode)
-            })
             .catch((err) => {
                 console.error(err)
                 if (res.writable) {
@@ -30,22 +27,55 @@ interface ValidationErr {
     errors: Record<string, string>
 }
 
+function getErrors(validationError: ValidationError, parent = ''): ValidationErr[] {
+    const errors: ValidationErr[] = []
+
+    let fieldPath = `${validationError.property}`
+    if (parent !== '') {
+        fieldPath = `${parent}.${validationError.property}`
+    } else {
+        fieldPath = `${validationError.property}`
+    }
+
+    if (validationError.constraints !== undefined) {
+        errors.push({
+            field: fieldPath,
+            errors: validationError.constraints,
+        })
+    }
+
+    const childErrors = validationError
+        .children?.map((x) => getErrors(x, fieldPath))
+        // Join sub-arrays (map returns a 2d array, reduce transforms that into a 1d array)
+        .reduce((acc, x) => [...acc, ...x], [])
+
+    if (childErrors !== undefined) {
+        errors.push(...childErrors)
+    }
+
+    return errors
+}
+
 function simplifyValidationErrors(errors: ValidationError[]): ValidationErr[] {
     return errors
-        .filter((err) => err.constraints !== undefined)
-        .map((err) => ({
-            field: err.property,
-            errors: err.constraints as Record<string, string>,
-        }))
+        .map((x) => getErrors(x, ''))
+        // Join sub-arrays (map returns a 2d array, reduce transforms that into a 1d array)
+        .reduce((acc, x) => [...acc, ...x], [])
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export async function validateDto<T extends object>(
     class_: ClassConstructor<T>,
     data: Record<string, unknown>,
+    groups: string[] | undefined = undefined,
 ): Promise<[T, ValidationErr[]]> {
     const dto = plainToClass(class_, data)
-    const errors = await validate(dto, { forbidNonWhitelisted: true })
+    const errors = await validate(dto, {
+        forbidNonWhitelisted: true,
+        groups,
+        always: true,
+        strictGroups: true,
+    })
     return [
         dto,
         simplifyValidationErrors(errors),
