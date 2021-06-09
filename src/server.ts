@@ -1,4 +1,5 @@
 import express from 'express'
+import 'reflect-metadata' // Needed for class-transform
 import { MongoClient } from 'mongodb'
 import * as redis from 'redis'
 import cookieParser from 'cookie-parser'
@@ -11,14 +12,14 @@ import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
 import UserRoutes from './users/routes'
 import { ISessionsService, SessionsServiceKvStore } from './users/sessionsService'
-import 'reflect-metadata' // Needed for class-transform
-import { IRolesRepository, RolesRepositoryMongo } from './projects/repositories/rolesRepository'
+import { RolesRepositoryMongo } from './projects/repositories/rolesRepository'
+import { IProjectsService, ProjectsService } from './projects/services/projectsService'
 
 export async function createApp(
     projectsRepository: IProjectsRepository,
     usersRepository: IUsersRepository,
     sessionsService: ISessionsService,
-    rolesRepository: IRolesRepository,
+    projectsService: IProjectsService,
 ): Promise<express.Application> {
     const logger = Logger.create()
     const app = express()
@@ -29,7 +30,7 @@ export async function createApp(
     app.use(cookieParser())
 
     logger.info('setting up routes')
-    ProjectRoutes(app, projectsRepository, sessionsService, rolesRepository)
+    ProjectRoutes(app, projectsRepository, sessionsService, projectsService)
     UserRoutes(app, usersRepository, sessionsService)
 
     return app
@@ -47,14 +48,16 @@ export async function bootstrap(): Promise<void> {
 
     const projectsRepository = new ProjectsRepositoryMongo(mongoDb)
     const usersRepository = new UsersRepositoryMongo(mongoDb)
-    const sessionsService = new SessionsServiceKvStore(redisKvStore, usersRepository)
     const rolesRepository = new RolesRepositoryMongo(mongoDb)
+
+    const sessionsService = new SessionsServiceKvStore(redisKvStore, usersRepository)
+    const projectsService = new ProjectsService(projectsRepository, rolesRepository)
 
     const app = await createApp(
         projectsRepository,
         usersRepository,
         sessionsService,
-        rolesRepository,
+        projectsService,
     )
 
     logger.info('starting server')
