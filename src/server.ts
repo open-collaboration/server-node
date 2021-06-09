@@ -11,11 +11,14 @@ import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
 import UserRoutes from './users/routes'
 import { ISessionsService, SessionsServiceKvStore } from './users/sessionsService'
+import 'reflect-metadata' // Needed for class-transform
+import { IRolesRepository, RolesRepositoryMongo } from './projects/repositories/rolesRepository'
 
 export async function createApp(
     projectsRepository: IProjectsRepository,
     usersRepository: IUsersRepository,
     sessionsService: ISessionsService,
+    rolesRepository: IRolesRepository,
 ): Promise<express.Application> {
     const logger = Logger.create()
     const app = express()
@@ -26,7 +29,7 @@ export async function createApp(
     app.use(cookieParser())
 
     logger.info('setting up routes')
-    ProjectRoutes(app, projectsRepository, sessionsService)
+    ProjectRoutes(app, projectsRepository, sessionsService, rolesRepository)
     UserRoutes(app, usersRepository, sessionsService)
 
     return app
@@ -45,8 +48,14 @@ export async function bootstrap(): Promise<void> {
     const projectsRepository = new ProjectsRepositoryMongo(mongoDb)
     const usersRepository = new UsersRepositoryMongo(mongoDb)
     const sessionsService = new SessionsServiceKvStore(redisKvStore, usersRepository)
+    const rolesRepository = new RolesRepositoryMongo(mongoDb)
 
-    const app = await createApp(projectsRepository, usersRepository, sessionsService)
+    const app = await createApp(
+        projectsRepository,
+        usersRepository,
+        sessionsService,
+        rolesRepository,
+    )
 
     logger.info('starting server')
     app.listen(3000)

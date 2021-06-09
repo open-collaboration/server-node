@@ -3,8 +3,11 @@ import { Logger } from '../logger'
 import { ISessionsService } from '../users/sessionsService'
 import { handleAsync, validateDto } from '../utils'
 import ProjectDto from './dtos/projectDto'
+import ProjectSummaryDto from './dtos/projectSummaryDto'
 import Project from './models/project'
+import Role from './models/role'
 import { IProjectsRepository } from './repositories/projectsRepository'
+import { IRolesRepository } from './repositories/rolesRepository'
 
 async function listProjects(
     req: express.Request,
@@ -22,9 +25,9 @@ async function listProjects(
         limit = 20
     }
 
-    const projects = await projectsRepository.listProjects(offset, limit)
+    const projectSummaries = await projectsRepository.listProjects(offset, limit)
 
-    res.json(projects.map(ProjectDto.fromProject))
+    res.json(projectSummaries.map(ProjectSummaryDto.fromProject))
     res.end()
 }
 
@@ -53,6 +56,7 @@ async function createProject(
     res: express.Response,
     projectsRepository: IProjectsRepository,
     sessionsService: ISessionsService,
+    rolesRepository: IRolesRepository,
 ) {
     const logger = Logger.create()
 
@@ -114,6 +118,15 @@ async function createProject(
         return
     }
 
+    // Check if roles dont have an id (as we cannot create a role that already exists)
+    if (!dto.roles.every((x) => x.id === undefined)) {
+        logger.info('One or more roles already have IDs')
+
+        res.status(400)
+        res.end()
+        return
+    }
+
     const model = new Project()
     model.title = dto.title
     model.shortDescription = dto.shortDescription
@@ -121,6 +134,19 @@ async function createProject(
     model.userId = user.id
 
     const projectId = await projectsRepository.createProject(model)
+
+    const roleModels = dto.roles.map((x) => {
+        const role = new Role()
+
+        role.projectId = projectId
+        role.title = x.title
+        role.skills = x.skills
+        role.description = x.description
+
+        return role
+    })
+
+    await rolesRepository.createRoles(roleModels)
 
     logger.info('successfully created project', { projectId })
 
@@ -177,9 +203,10 @@ export default function setupRoutes(
     app: express.Express,
     projectsRepository: IProjectsRepository,
     sessionsService: ISessionsService,
+    rolesRepository: IRolesRepository,
 ): void {
     app.get('/projects', handleAsync(listProjects, projectsRepository))
     app.get('/projects/:id', handleAsync(getProject, projectsRepository))
-    app.post('/projects', handleAsync(createProject, projectsRepository, sessionsService))
+    app.post('/projects', handleAsync(createProject, projectsRepository, sessionsService, rolesRepository))
     app.delete('/projects/:id', handleAsync(deleteProject, projectsRepository, sessionsService))
 }

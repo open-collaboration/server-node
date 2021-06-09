@@ -30,8 +30,22 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
         return project
     }
 
-    async listProjects(offset: number, limit: number): Promise<Project[]> {
-        const docs = await this.collection.find().skip(offset).limit(limit).toArray()
+    /**
+     *
+     * @param offset Number of projects to skip in the query
+     * @param limit Number of projects returned in the query
+     * @param summary Whether the query should return only the summary of the project
+     * (id, title and short description)
+     * @returns
+     */
+    async listProjects(offset: number, limit: number, summary = true): Promise<Project[]> {
+        const docs = await this.collection.find({}, {
+            projection: {
+                _id: 1,
+                title: 1,
+                shortDescription: 1,
+            },
+        }).skip(offset).limit(limit).toArray()
 
         return docs.map(this.docToProject)
     }
@@ -42,14 +56,14 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
         }
 
         const doc = {
-            _id: project.id,
+            _id: new mongo.ObjectId(project.id),
             title: project.title,
             shortDescription: project.shortDescription,
             longDescription: project.longDescription,
             userId: project.userId,
         }
 
-        return (await this.collection.insertOne(doc)).insertedId
+        return (await this.collection.insertOne(doc)).insertedId.toString()
     }
 
     async getProjectByUserId(userId: string): Promise<Project | undefined> {
