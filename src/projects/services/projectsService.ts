@@ -28,6 +28,10 @@ export class ProjectsService implements IProjectsService {
             throw new Error('User already owns a project')
         }
 
+        if (dto.id !== undefined) {
+            throw new Error('Project already has an ID')
+        }
+
         // Check if roles dont have an id (as we cannot create a role that already exists)
         if (!dto.roles.every((x) => x.id === undefined)) {
             throw new Error('One or more roles already have IDs')

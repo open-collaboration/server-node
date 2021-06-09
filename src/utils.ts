@@ -12,10 +12,13 @@ export function handleAsync<T extends unknown[]>(
 ): express.Handler {
     return (req: express.Request, res: express.Response) => {
         handler(req, res, ...injected)
+            .then(() => {
+                console.log(res.statusCode)
+            })
             .catch((err) => {
                 console.error(err)
                 if (res.writable) {
-                    res.status(499)
+                    res.status(500)
                     res.end()
                 }
             })

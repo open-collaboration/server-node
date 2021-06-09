@@ -1,5 +1,7 @@
 import { Type } from 'class-transformer'
-import { Allow, Length, ValidateNested } from 'class-validator'
+import {
+    Allow, ArrayMaxSize, ArrayMinSize, IsArray, Length, ValidateNested,
+} from 'class-validator'
 import Project from '../models/project'
 import RoleDto from './roleDto'
 
@@ -16,8 +18,10 @@ export default class ProjectDto {
     @Length(300, 10000)
     longDescription = ''
 
+    @IsArray()
     @Type(() => RoleDto)
-    @Length(1, 5)
+    @ArrayMinSize(1)
+    @ArrayMaxSize(5)
     @ValidateNested()
     roles: RoleDto[] = []
 
