@@ -1,11 +1,11 @@
-export default class Role {
-    public projectId = ''
+import Model from '../../share/model'
 
-    public title = ''
+export default class Role extends Model {
+    projectId = ''
 
-    public description = ''
+    title = ''
 
-    public skills: string[] = []
+    description = ''
 
-    public id?: string = ''
+    skills: string[] = []
 }

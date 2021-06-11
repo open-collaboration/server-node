@@ -1,4 +1,7 @@
+import { validate } from 'class-validator'
+import DtoValidationError from '../../share/errors'
 import User from '../../users/models/user'
+import { PROJECT_DTO_GROUP_CREATE } from '../dtos/dtoGroups'
 import ProjectDto from '../dtos/projectDto'
 import Project from '../models/project'
 import Role from '../models/role'
@@ -16,17 +19,10 @@ export class ProjectsService implements IProjectsService {
     ) {}
 
     async createProject(dto: ProjectDto, ownerUser: User): Promise<string> {
-        if (ownerUser.id === undefined) {
-            // remove this shit, use a different type for user with id and without
-            throw new Error('user does not have id')
-        }
+        await this.validateCreateProjectDto(dto)
 
-        // Check if user already owns a project.
         // Each user can only own a single project.
-        const existingProject = await this.projectsRepository.getProjectByUserId(ownerUser.id)
-        if (existingProject !== undefined) {
-            throw new Error('User already owns a project')
-        }
+        await this.checkUserOwnsAProject(ownerUser)
 
         const model = this.projectFromDto(dto, ownerUser.id)
         const projectId = await this.projectsRepository.createProject(model)
@@ -35,6 +31,23 @@ export class ProjectsService implements IProjectsService {
         await this.rolesRepository.createRoles(roleModels)
 
         return projectId
+    }
+
+    async validateCreateProjectDto(dto: ProjectDto): Promise<void> {
+        const validationErrors = await validate(dto, {
+            groups: [PROJECT_DTO_GROUP_CREATE],
+        })
+        if (validationErrors.length > 0) {
+            throw new DtoValidationError(validationErrors)
+        }
+    }
+
+    async checkUserOwnsAProject(user: User): Promise<void> {
+        const project = await this.projectsRepository.getProjectByUserId(user.id)
+
+        if (project !== undefined) {
+            throw new Error('User already owns a project')
+        }
     }
 
     projectFromDto(dto: ProjectDto, userId: string): Project {

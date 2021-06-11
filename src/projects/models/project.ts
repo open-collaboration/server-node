@@ -1,6 +1,6 @@
-export default class Project {
-    id?: string
+import Model from '../../share/model'
 
+export default class Project extends Model {
     title = ''
 
     shortDescription = ''

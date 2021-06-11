@@ -1,8 +1,7 @@
 import bcrypt from 'bcrypt'
+import Model from '../../share/model'
 
-export default class User {
-    id?: string
-
+export default class User extends Model {
     username = ''
 
     email = ''

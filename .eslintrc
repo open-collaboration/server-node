@@ -43,6 +43,7 @@
         "no-restricted-syntax": "off",
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/strict-boolean-expressions": "error",
-        "no-void": ["error", { "allowAsStatement": true}]
+        "no-void": ["error", { "allowAsStatement": true}],
+        "no-param-reassign": "off"
     }
 }

@@ -20,7 +20,7 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
     private docToProject(doc: any): Project {
         const project = new Project()
 
-        project.id = doc._id
+        project.id = doc._id.toString()
         project.title = doc.title ?? ''
         project.shortDescription = doc.shortDescription ?? ''
         project.longDescription = doc.longDescription ?? ''
@@ -51,12 +51,12 @@ export class ProjectsRepositoryMongo implements IProjectsRepository {
     }
 
     async createProject(project: Project): Promise<string> {
-        if (project.id !== undefined) {
-            throw new Error('Cannot create a project that already has an id')
+        if (project.id !== '') {
+            throw new Error('cannot create a project that already has an id')
         }
 
         const doc = {
-            _id: new mongo.ObjectId(project.id),
+            _id: new mongo.ObjectId(),
             title: project.title,
             shortDescription: project.shortDescription,
             longDescription: project.longDescription,

@@ -57,10 +57,6 @@ export class SessionsServiceKvStore implements ISessionsService {
     }
 
     async createSession(user: User): Promise<string> {
-        if (user.id === undefined) {
-            throw new Error('User does not have id')
-        }
-
         const token = v4()
 
         // TODO: do transaction
@@ -80,10 +76,6 @@ export class SessionsServiceKvStore implements ISessionsService {
     }
 
     async revokeSessions(user: User): Promise<void> {
-        if (user.id === undefined) {
-            throw new Error('User does not have id')
-        }
-
         const sessionTokens = await this.store.setGet(this.tokensByUser(user.id))
         if (sessionTokens === undefined) {
             return

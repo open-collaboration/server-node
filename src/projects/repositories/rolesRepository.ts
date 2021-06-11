@@ -17,18 +17,18 @@ export class RolesRepositoryMongo implements IRolesRepository {
     private docToRole(doc: any): Role {
         const role = new Role()
 
+        role.id = doc._id.toString()
         role.projectId = doc.projectId ?? ''
         role.title = doc.title ?? ''
         role.description = doc.description ?? ''
         role.skills = doc.skills ?? []
-        role.id = doc._id.toString()
 
         return role
     }
 
     private roleToDoc(role: Role): any {
         return {
-            _id: role.id === undefined ? new mongo.ObjectId(role.id) : undefined,
+            _id: role.hasId() ? new mongo.ObjectId(role.id) : new mongo.ObjectId(),
             projectId: role.projectId,
             title: role.title,
             description: role.description,
@@ -37,7 +37,7 @@ export class RolesRepositoryMongo implements IRolesRepository {
     }
 
     async createRoles(roles: Role[]): Promise<string[]> {
-        if (roles.find((x) => x.id !== undefined) !== undefined) {
+        if (roles.filter((x) => x.id !== '').length > 0) {
             throw new Error('Cannot create a role that already has an id')
         }
 

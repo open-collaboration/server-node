@@ -143,10 +143,6 @@ async function deleteProject(
         return
     }
 
-    if (project.id === undefined) {
-        throw new Error('Project has no id')
-    }
-
     await projectsRepository.deleteProjectById(project.id)
 
     res.status(204)

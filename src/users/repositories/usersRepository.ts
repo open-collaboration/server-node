@@ -64,10 +64,6 @@ export class UsersRepositoryMongo implements IUsersRepository {
     }
 
     async createUser(user: User): Promise<void> {
-        if (user.id !== undefined) {
-            throw new Error('cannot create a user that already has an id')
-        }
-
         const doc = {
             _id: user.id,
             username: user.username,
