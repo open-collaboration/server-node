@@ -11,7 +11,7 @@ import { IProjectsRepository, ProjectsRepositoryMongo } from './projects/reposit
 import ProjectRoutes from './projects/routes'
 import { IUsersRepository, UsersRepositoryMongo } from './users/repositories/usersRepository'
 import UserRoutes from './users/routes'
-import { ISessionsService, SessionsServiceKvStore } from './users/sessionsService'
+import { ISessionsService, SessionsServiceKvStore } from './users/services/sessionsService'
 import { RolesRepositoryMongo } from './projects/repositories/rolesRepository'
 import { IProjectsService, ProjectsService } from './projects/services/projectsService'
 

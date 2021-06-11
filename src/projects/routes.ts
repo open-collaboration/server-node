@@ -1,6 +1,6 @@
 import express from 'express'
 import { Logger } from '../logger'
-import { ISessionsService } from '../users/sessionsService'
+import { ISessionsService } from '../users/services/sessionsService'
 import { handleAsync, validateDto } from '../utils'
 import { PROJECT_DTO_GROUP_CREATE } from './dtos/dtoGroups'
 import ProjectDto from './dtos/projectDto'

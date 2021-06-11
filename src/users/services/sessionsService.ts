@@ -1,7 +1,7 @@
 import { v4 } from 'uuid'
-import { IKVStore } from '../facades/kvStore'
-import User from './models/user'
-import { IUsersRepository } from './repositories/usersRepository'
+import { IKVStore } from '../../facades/kvStore'
+import User from '../models/user'
+import { IUsersRepository } from '../repositories/usersRepository'
 
 /**
  * A service for managing user sessions.

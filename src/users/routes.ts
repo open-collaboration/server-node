@@ -7,7 +7,7 @@ import LoginDto from './dtos/loginDto'
 import RegisterUserDto from './dtos/registerUserDto'
 import User from './models/user'
 import { IUsersRepository } from './repositories/usersRepository'
-import { ISessionsService } from './sessionsService'
+import { ISessionsService } from './services/sessionsService'
 
 async function registerUser(
     req: express.Request,

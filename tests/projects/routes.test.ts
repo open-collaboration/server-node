@@ -8,7 +8,7 @@ import * as server from '../../src/server'
 import ProjectSummaryDto from '../../src/projects/dtos/projectSummaryDto'
 import { IRolesRepository } from '../../src/projects/repositories/rolesRepository'
 import { IProjectsService, ProjectsService } from '../../src/projects/services/projectsService'
-import { ISessionsService } from '../../src/users/sessionsService'
+import { ISessionsService } from '../../src/users/services/sessionsService'
 import User from '../../src/users/models/user'
 
 const lorem = new LoremIpsum()
